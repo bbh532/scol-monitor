@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """单次监控：由 GitHub Actions 每 5 分钟调度，两页各访问一次后把进度提交回仓库"""
-import requests, re, time, json, os, random
+import requests, re, time, json, os, random, os as _os
+_os.environ["TZ"] = "Asia/Shanghai"
+time.tzset()
 
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 STATE = os.path.join(REPO_DIR, "state.json")
