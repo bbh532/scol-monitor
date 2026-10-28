@@ -23,6 +23,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Install deps
+        run: pip install requests
       - name: Run monitor
         run: python monitor_once.py
       - name: Commit progress
