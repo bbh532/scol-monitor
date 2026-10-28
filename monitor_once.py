@@ -17,6 +17,26 @@ FINISH_MARKER = os.path.join(REPO_DIR, "FINISHED")
 with open(STATE) as f:
     state = json.load(f)
 
+# 防重入：距上一次访问不足 3 分钟则跳过（防止 schedule 与外部触发撞车）
+def _last_ts(tid):
+    try:
+        with open(os.path.join(REPO_DIR, f"log_{tid}.jsonl")) as f:
+            for line in reversed(f.readlines()):
+                line = line.strip()
+                if line:
+                    return json.loads(line)["ts"]
+    except Exception:
+        return None
+
+from datetime import datetime
+_last = _last_ts("8089262") or _last_ts("8089700")
+if _last:
+    _dt = datetime.strptime(_last, "%Y-%m-%d %H:%M:%S")
+    _age = (datetime.now() - _dt).total_seconds()
+    if 0 <= _age < 180:
+        print(f"SKIP: last visit only {_age:.0f}s ago")
+        raise SystemExit(0)
+
 if all(v <= 0 for v in state.values()):
     open(FINISH_MARKER, "w").write(time.strftime("%Y-%m-%d %H:%M:%S"))
     print("ALL DONE")
