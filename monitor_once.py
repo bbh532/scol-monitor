@@ -11,7 +11,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
     "Accept-Language": "zh-CN,zh;q=0.9",
 }
-TOTALS = {"8089262": 500, "8089700": 600}
+TOTALS = {"8089262": 500, "8089700": 600, "8095497": 600}
 FINISH_MARKER = os.path.join(REPO_DIR, "FINISHED")
 
 with open(STATE) as f:
@@ -29,7 +29,7 @@ def _last_ts(tid):
         return None
 
 from datetime import datetime
-_last = _last_ts("8089262") or _last_ts("8089700")
+_last = _last_ts("8089262") or _last_ts("8089700") or _last_ts("80895497")
 if _last:
     _dt = datetime.strptime(_last, "%Y-%m-%d %H:%M:%S")
     _age = (datetime.now() - _dt).total_seconds()
