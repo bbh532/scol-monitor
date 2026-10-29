@@ -71,6 +71,47 @@ for tid in list(state):
         state[tid] -= 1
         time.sleep(random.uniform(5, 15))
 
+# ---- 发布后 72 小时快照（到达时记录一次，之后不再改动）----
+try:
+    _snap_path = os.path.join(REPO_DIR, "at72h.json")
+    _snap = json.load(open(_snap_path)) if os.path.exists(_snap_path) else {}
+    _arts_cfg = json.load(open(os.path.join(REPO_DIR, "articles.json")))["articles"]
+    from datetime import datetime as _dt, timedelta as _td
+    _now = _dt.now()
+    _changed = False
+    for _a in _arts_cfg:
+        _tid = _a["id"]
+        if not _a.get("publish"):
+            continue
+        _t72 = _dt.strptime(_a["publish"], "%Y-%m-%d %H:%M") + _td(hours=72)
+        _rec = _snap.get(_tid, {})
+        if _now >= _t72 and _rec.get("status") != "recorded":
+            _p = os.path.join(REPO_DIR, f"log_{_tid}.jsonl")
+            _n = 0
+            if os.path.exists(_p):
+                for _line in open(_p, encoding="utf-8"):
+                    _line = _line.strip()
+                    if not _line:
+                        continue
+                    try:
+                        if _dt.strptime(json.loads(_line)["ts"], "%Y-%m-%d %H:%M:%S") <= _t72:
+                            _n += 1
+                    except Exception:
+                        pass
+            _snap[_tid] = {
+                "publish": _a["publish"],
+                "t72": _t72.strftime("%Y-%m-%d %H:%M"),
+                "count_at_t72": _n,
+                "recorded_at": _now.strftime("%Y-%m-%d %H:%M:%S"),
+                "status": "recorded",
+            }
+            _changed = True
+            print(f"SNAPSHOT {_tid}: {_n} visits by {_t72}")
+    if _changed:
+        json.dump(_snap, open(_snap_path, "w"), ensure_ascii=False, indent=2)
+except Exception as _e:
+    print("snapshot err:", str(_e)[:120])
+
 with open(STATE, "w") as f:
     json.dump(state, f)
 if all(v <= 0 for v in state.values()):
