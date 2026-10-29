@@ -11,7 +11,8 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
     "Accept-Language": "zh-CN,zh;q=0.9",
 }
-TOTALS = {"8089262": 500, "8089700": 600, "8095497": 600}
+with open(os.path.join(REPO_DIR, "articles.json")) as _af:
+    TOTALS = {a["id"]: a["total"] for a in json.load(_af)["articles"]}
 FINISH_MARKER = os.path.join(REPO_DIR, "FINISHED")
 
 with open(STATE) as f:
