@@ -17,9 +17,8 @@
   "8095497": {
     "publish": "2026-10-28 17:19",
     "t72": "2026-10-31 17:19",
-    "count_at_t72": 49,
-    "total_log": 49,
-    "first_visit": "2026-10-29 09:17",
-    "status": "pending"
+    "count_at_t72": 600,
+    "recorded_at": "2026-10-31 23:53:30",
+    "status": "recorded"
   }
 }
