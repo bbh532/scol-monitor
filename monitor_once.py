@@ -30,7 +30,7 @@ def _last_ts(tid):
         return None
 
 from datetime import datetime
-_last = _last_ts("8089262") or _last_ts("8089700") or _last_ts("80895497")
+_last = _last_ts("8109061") or _last_ts("8095497") or _last_ts("8089700") or _last_ts("8089262")
 if _last:
     _dt = datetime.strptime(_last, "%Y-%m-%d %H:%M:%S")
     _age = (datetime.now() - _dt).total_seconds()
@@ -38,9 +38,29 @@ if _last:
         print(f"SKIP: last visit only {_age:.0f}s ago")
         raise SystemExit(0)
 
-if all(v <= 0 for v in state.values()):
+from datetime import datetime as _d, timedelta as _t
+
+_CFG = {a["id"]: a for a in json.load(open(os.path.join(REPO_DIR, "articles.json")))["articles"]}
+
+def _t72(tid):
+    p = _CFG.get(tid, {}).get("publish")
+    if not p:
+        return None
+    return _d.strptime(p, "%Y-%m-%d %H:%M") + _t(hours=72)
+
+def _active(tid):
+    """该文章是否还需继续访问：未跑满 目标次数 且 未到 72h"""
+    t = _t72(tid)
+    if t is None:
+        return state.get(tid, 0) > 0
+    if _d.now() >= t:
+        return False          # 已过 72h，停止
+    return True               # 未到 72h，即使跑满目标也继续
+
+_active_ids = [tid for tid in state if _active(tid)]
+if not _active_ids:
     open(FINISH_MARKER, "w").write(time.strftime("%Y-%m-%d %H:%M:%S"))
-    print("ALL DONE")
+    print("ALL DONE (all articles reached 72h)")
     raise SystemExit(0)
 
 session = requests.Session()
@@ -65,11 +85,11 @@ def fetch(tid, left):
         f.write(json.dumps(rec, ensure_ascii=False) + "\n")
     print(f"#{rec['seq']} id={tid} status={rec['status']} ms={rec.get('ms','')}")
 
-for tid in list(state):
-    if state[tid] > 0:
-        fetch(tid, state[tid])
-        state[tid] -= 1
-        time.sleep(random.uniform(5, 15))
+for tid in _active_ids:
+    fetch(tid, state.get(tid, 0))
+    if state.get(tid, 0) > 0:
+        state[tid] = state[tid] - 1
+    time.sleep(random.uniform(5, 15))
 
 # ---- 发布后 72 小时快照（到达时记录一次，之后不再改动）----
 try:
