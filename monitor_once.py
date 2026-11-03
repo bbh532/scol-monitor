@@ -49,13 +49,14 @@ def _t72(tid):
     return _d.strptime(p, "%Y-%m-%d %H:%M") + _t(hours=72)
 
 def _active(tid):
-    """该文章是否还需继续访问：未跑满 目标次数 且 未到 72h"""
+    """该文章是否还需继续访问：跑满目标次数 且 已过 72h，两者都满足才停"""
+    left = state.get(tid, 0)
     t = _t72(tid)
+    if left > 0:
+        return True            # 未跑满，继续（无论是否到 72h）
     if t is None:
-        return state.get(tid, 0) > 0
-    if _d.now() >= t:
-        return False          # 已过 72h，停止
-    return True               # 未到 72h，即使跑满目标也继续
+        return False
+    return _d.now() < t        # 已跑满但 72h 未到，继续
 
 _active_ids = [tid for tid in state if _active(tid)]
 if not _active_ids:
