@@ -34,7 +34,7 @@ _last = _last_ts("8109061") or _last_ts("8095497") or _last_ts("8089700") or _la
 if _last:
     _dt = datetime.strptime(_last, "%Y-%m-%d %H:%M:%S")
     _age = (datetime.now() - _dt).total_seconds()
-    if 0 <= _age < 180:
+    if 0 <= _age < 110:
         print(f"SKIP: last visit only {_age:.0f}s ago")
         raise SystemExit(0)
 
