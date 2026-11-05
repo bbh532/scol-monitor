@@ -20,5 +20,12 @@
     "count_at_t72": 600,
     "recorded_at": "2026-10-31 23:53:30",
     "status": "recorded"
+  },
+  "8109061": {
+    "publish": "2026-11-02 21:08",
+    "t72": "2026-11-05 21:08",
+    "count_at_t72": 997,
+    "recorded_at": "2026-11-05 21:09:35",
+    "status": "recorded"
   }
 }
