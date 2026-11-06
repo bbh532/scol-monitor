@@ -135,6 +135,9 @@ except Exception as _e:
 
 with open(STATE, "w") as f:
     json.dump(state, f)
-if all(v <= 0 for v in state.values()):
+if not [tid for tid in state if _active(tid)]:
     open(FINISH_MARKER, "w").write(time.strftime("%Y-%m-%d %H:%M:%S"))
-    print("ALL DONE")
+    print("ALL DONE (all articles reached 72h)")
+elif os.path.exists(FINISH_MARKER):
+    os.remove(FINISH_MARKER)
+    print("FINISHED marker removed: still inside 72h window")
