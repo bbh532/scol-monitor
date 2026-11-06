@@ -30,7 +30,11 @@ def _last_ts(tid):
         return None
 
 from datetime import datetime
-_last = _last_ts("8109061") or _last_ts("8095497") or _last_ts("8089700") or _last_ts("8089262")
+_last = None
+for _tid_chk in state:
+    _v = _last_ts(_tid_chk)
+    if _v and (_last is None or _v > _last):
+        _last = _v
 if _last:
     _dt = datetime.strptime(_last, "%Y-%m-%d %H:%M:%S")
     _age = (datetime.now() - _dt).total_seconds()
@@ -104,9 +108,9 @@ try:
         _tid = _a["id"]
         if not _a.get("publish"):
             continue
-        _t72 = _dt.strptime(_a["publish"], "%Y-%m-%d %H:%M") + _td(hours=72)
+        _dl = _dt.strptime(_a["publish"], "%Y-%m-%d %H:%M") + _td(hours=72)
         _rec = _snap.get(_tid, {})
-        if _now >= _t72 and _rec.get("status") != "recorded":
+        if _now >= _dl and _rec.get("status") != "recorded":
             _p = os.path.join(REPO_DIR, f"log_{_tid}.jsonl")
             _n = 0
             if os.path.exists(_p):
@@ -115,19 +119,19 @@ try:
                     if not _line:
                         continue
                     try:
-                        if _dt.strptime(json.loads(_line)["ts"], "%Y-%m-%d %H:%M:%S") <= _t72:
+                        if _dt.strptime(json.loads(_line)["ts"], "%Y-%m-%d %H:%M:%S") <= _dl:
                             _n += 1
                     except Exception:
                         pass
             _snap[_tid] = {
                 "publish": _a["publish"],
-                "t72": _t72.strftime("%Y-%m-%d %H:%M"),
+                "t72": _dl.strftime("%Y-%m-%d %H:%M"),
                 "count_at_t72": _n,
                 "recorded_at": _now.strftime("%Y-%m-%d %H:%M:%S"),
                 "status": "recorded",
             }
             _changed = True
-            print(f"SNAPSHOT {_tid}: {_n} visits by {_t72}")
+            print(f"SNAPSHOT {_tid}: {_n} visits by {_dl}")
     if _changed:
         json.dump(_snap, open(_snap_path, "w"), ensure_ascii=False, indent=2)
 except Exception as _e:
