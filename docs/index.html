@@ -1,0 +1,122 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>川观新闻监控看板</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:system-ui,'Microsoft YaHei',sans-serif;background:#f5f7fa;margin:0;padding:22px;color:#1b2330}
+h1{font-size:19px;margin:0 0 4px}
+.sub{color:#6b7480;font-size:13px;margin:0 0 18px}
+.kpi{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.card{background:#fff;border-radius:10px;padding:12px 18px;box-shadow:0 1px 4px rgba(0,0,0,.07);min-width:132px}
+.card .v{font-size:22px;font-weight:650;color:#1e64d5}
+.card .k{font-size:12px;color:#6b7480;margin-top:2px}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+th,td{padding:10px;font-size:13px;text-align:left;border-bottom:1px solid #eef1f5;vertical-align:middle}
+th{background:#1e64d5;color:#fff;font-weight:600;font-size:12.5px;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafd}
+.mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.dim{color:#98a2b0;font-size:12px}
+.bar{width:86px;height:8px;background:#e5e9f0;border-radius:4px;display:inline-block;vertical-align:middle;margin-right:6px}
+.bar div{height:100%;background:linear-gradient(90deg,#4b8ef1,#1e64d5);border-radius:4px}
+.pct{font-size:12px;color:#455}
+.ok{color:#0a7d33} .err{color:#c93636} .pend{color:#b7791f} .ok72{color:#0a7d33}
+.foot{margin-top:14px;color:#98a2b0;font-size:12px}
+</style></head><body>
+<h1>川观新闻文章监控看板</h1>
+<p class="sub">执行引擎：GitHub Actions · 数据时间 2026-11-06 17:39:48 · 页面每 2 分钟自动刷新</p>
+<div class="kpi">
+<div class="card"><div class="v">8</div><div class="k">监控文章</div></div>
+<div class="card"><div class="v">4</div><div class="k">已过 72h</div></div>
+<div class="card"><div class="v">4</div><div class="k">跑满且过 72h</div></div>
+<div class="card"><div class="v">7082</div><div class="k">累计访问次数</div></div>
+</div>
+<table><tr>
+<th>文章ID</th><th>标题</th><th>进度</th><th>已访问次数</th><th>距目标</th><th>距发布 72h</th><th>最近状态</th><th>最近访问</th><th>72h 时点累计</th>
+</tr>
+<tr>
+<td class="mono">8089262</td>
+<td>贵州施秉：五控一治理减轻群众负担</td>
+<td><div class="bar"><div style="width:100.0%"></div></div><span class="pct">100.0%</span></td>
+<td class="num">503<span class="dim"> / 500</span></td>
+<td class="num">0</td>
+<td class="ok72">已到点</td>
+<td class="ok">200 · 1795ms</td>
+<td class="mono dim">2026-10-30 06:48:11</td>
+<td class="num">218 次</td>
+</tr><tr>
+<td class="mono">8089700</td>
+<td>广东江门塘口：从物质粮仓到精神粮仓</td>
+<td><div class="bar"><div style="width:100.0%"></div></div><span class="pct">100.0%</span></td>
+<td class="num">600<span class="dim"> / 600</span></td>
+<td class="num">0</td>
+<td class="ok72">已到点</td>
+<td class="ok">200 · 2144ms</td>
+<td class="mono dim">2026-10-30 10:39:12</td>
+<td class="num">270 次</td>
+</tr><tr>
+<td class="mono">8095497</td>
+<td>宁夏银川：沉浸式戏剧传承艰苦奋斗精神</td>
+<td><div class="bar"><div style="width:100.0%"></div></div><span class="pct">100.0%</span></td>
+<td class="num">600<span class="dim"> / 600</span></td>
+<td class="num">0</td>
+<td class="ok72">已到点</td>
+<td class="ok">200 · 4254ms</td>
+<td class="mono dim">2026-10-30 19:18:11</td>
+<td class="num">600 次</td>
+</tr><tr>
+<td class="mono">8109061</td>
+<td>新疆克拉玛依：从一条热线读懂一座城的文明</td>
+<td><div class="bar"><div style="width:100.0%"></div></div><span class="pct">100.0%</span></td>
+<td class="num">997<span class="dim"> / 800</span></td>
+<td class="num">0</td>
+<td class="ok72">已到点</td>
+<td class="ok">200 · 2327ms</td>
+<td class="mono dim">2026-11-05 21:04:34</td>
+<td class="num">997 次</td>
+</tr><tr>
+<td class="mono">8116228</td>
+<td>跳进湍急河水，体育教师寇强向善见担当丨高新好人</td>
+<td><div class="bar"><div style="width:100.0%"></div></div><span class="pct">100.0%</span></td>
+<td class="num">1127<span class="dim"> / 1000</span></td>
+<td class="num">0</td>
+<td class="pend">还有 41h36m</td>
+<td class="ok">200 · 2482ms</td>
+<td class="mono dim">2026-11-06 17:30:12</td>
+<td class="num">待记录</td>
+</tr><tr>
+<td class="mono">8116226</td>
+<td>“车棚理发师”李永福：一腿撑初心 一剪传温情丨高新好人</td>
+<td><div class="bar"><div style="width:100.0%"></div></div><span class="pct">100.0%</span></td>
+<td class="num">1126<span class="dim"> / 600</span></td>
+<td class="num">0</td>
+<td class="pend">还有 42h04m</td>
+<td class="ok">200 · 475ms</td>
+<td class="mono dim">2026-11-06 17:30:25</td>
+<td class="num">待记录</td>
+</tr><tr>
+<td class="mono">8116225</td>
+<td>笑意为灯，她以温柔点亮无数异乡时刻丨高新好人</td>
+<td><div class="bar"><div style="width:100.0%"></div></div><span class="pct">100.0%</span></td>
+<td class="num">1126<span class="dim"> / 1100</span></td>
+<td class="num">0</td>
+<td class="pend">还有 42h10m</td>
+<td class="ok">200 · 383ms</td>
+<td class="mono dim">2026-11-06 17:30:32</td>
+<td class="num">待记录</td>
+</tr><tr>
+<td class="mono">8117448</td>
+<td>广西南宁：让“老友”生长为城市文明名片丨40年·40城</td>
+<td><div class="bar"><div style="width:100.0%"></div></div><span class="pct">100.0%</span></td>
+<td class="num">1003<span class="dim"> / 800</span></td>
+<td class="num">0</td>
+<td class="pend">还有 48h05m</td>
+<td class="ok">200 · 477ms</td>
+<td class="mono dim">2026-11-06 17:30:43</td>
+<td class="num">待记录</td>
+</tr>
+</table>
+<p class="foot">停止规则：跑满目标次数 <b>且</b> 已过发布后 72 小时，两者都满足才停止。跑满后仍按节奏继续访问，直至 72h 节点。</p>
+<script>setTimeout(function(){location.replace('?t='+Date.now())},120000)</script>
+</body></html>
