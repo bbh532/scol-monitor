@@ -54,6 +54,8 @@ def _t72(tid):
 
 def _active(tid):
     """该文章是否还需继续访问：跑满目标次数 且 已过 72h，两者都满足才停"""
+    if _CFG.get(tid, {}).get("stopped"):
+        return False          # 人工停止：不再访问（72h 快照仍从历史日志回算）
     left = state.get(tid, 0)
     t = _t72(tid)
     if left > 0:
