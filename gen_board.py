@@ -57,7 +57,10 @@ for a in articles:
             t72 = datetime.strptime(a["publish"], "%Y-%m-%d %H:%M") + timedelta(hours=72)
         except Exception:
             t72 = None
-    if t72:
+    stopped = bool(a.get("stopped"))
+    if stopped:
+        left72_txt, left72_cls = "已停止", "stop"
+    elif t72:
         delta = (t72 - now).total_seconds()
         if delta > 0:
             h, m = int(delta // 3600), int(delta % 3600 // 60)
@@ -110,7 +113,7 @@ tr:hover td{{background:#f8fafd}}
 .bar{{width:86px;height:8px;background:#e5e9f0;border-radius:4px;display:inline-block;vertical-align:middle;margin-right:6px}}
 .bar div{{height:100%;background:linear-gradient(90deg,#4b8ef1,#1e64d5);border-radius:4px}}
 .pct{{font-size:12px;color:#455}}
-.ok{{color:#0a7d33}} .err{{color:#c93636}} .pend{{color:#b7791f}} .ok72{{color:#0a7d33}}
+.stop{{color:#8a8f99;font-weight:600}} .ok{{color:#0a7d33}} .err{{color:#c93636}} .pend{{color:#b7791f}} .ok72{{color:#0a7d33}}
 .foot{{margin-top:14px;color:#98a2b0;font-size:12px}}
 </style></head><body>
 <h1>川观新闻文章监控看板</h1>
