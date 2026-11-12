@@ -1,20 +1,16 @@
 name: scol-monitor
 on:
   schedule:
-    - cron: "*/4 * * * *"
+    - cron: "*/30 * * * *"
   workflow_dispatch: {}
 
 permissions:
   contents: write
 
-concurrency:
-  group: monitor
-  cancel-in-progress: false
-
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 340
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,19 +21,23 @@ jobs:
           python-version: "3.11"
       - name: Install deps
         run: pip install requests
-      - name: Run monitor
-        run: python monitor_once.py
-      - name: Generate board
-        run: python gen_board.py
-      - name: Commit progress
+      - name: Loop run (about 5.5h)
+        id: loop
+        run: python loop_runner.py
+      - name: Self rerun
+        if: steps.loop.outputs.exit == '42'
+        env:
+          MONITOR_TOKEN: ${{ secrets.MONITOR_TOKEN }}
         run: |
-          git config user.name "monitor-bot"
-          git config user.email "monitor-bot@users.noreply.github.com"
-          git add -A
-          if git diff --cached --quiet; then
-            echo "No changes"
-          else
-            git commit -m "monitor: $(date -u -d '+8 hours' '+%Y-%m-%d %H:%M') [skip ci]"
-            git pull --rebase origin main
-            git push
-          fi
+          ok=0
+          for i in 1 2 3 4 5; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+              -H "Authorization: token $MONITOR_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/bbh532/scol-monitor/actions/workflows/monitor.yml/dispatches \
+              -d '{"ref":"main"}')
+            echo "attempt $i -> HTTP $code"
+            if [ "$code" = "204" ]; then ok=1; break; fi
+            sleep 30
+          done
+          if [ "$ok" != "1" ]; then echo "rerun dispatch failed"; exit 1; fi
