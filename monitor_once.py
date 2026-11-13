@@ -53,50 +53,18 @@ def _t72(tid):
     return _d.strptime(p, "%Y-%m-%d %H:%M") + _t(hours=72)
 
 def _active(tid):
-    """该文章是否还需继续访问：跑满目标次数 且 已过 72h，两者都满足才停"""
+    """跑满目标次数即停。默认不再续撑 72h；
+    单篇如需续跑，在该篇配置里加 "hold72": true 即可。"""
     if _CFG.get(tid, {}).get("stopped"):
-        return False          # 人工停止：不再访问（72h 快照仍从历史日志回算）
-    left = state.get(tid, 0)
-    t = _t72(tid)
-    if left > 0:
-        return True            # 未跑满，继续（无论是否到 72h）
-    if t is None:
         return False
-    return _d.now() < t        # 已跑满但 72h 未到，继续
+    if state.get(tid, 0) > 0:
+        return True            # 未跑满，继续
+    if _CFG.get(tid, {}).get("hold72"):
+        t = _t72(tid)
+        return t is not None and _d.now() < t
+    return False               # 跑满即停
 
 _active_ids = [tid for tid in state if _active(tid)]
-if not _active_ids:
-    open(FINISH_MARKER, "w").write(time.strftime("%Y-%m-%d %H:%M:%S"))
-    print("ALL DONE (all articles reached 72h)")
-    raise SystemExit(0)
-
-session = requests.Session()
-session.headers.update(HEADERS)
-
-def fetch(tid, left):
-    t0 = time.time()
-    rec = {"seq": left, "ts": time.strftime("%Y-%m-%d %H:%M:%S")}
-    try:
-        r = session.get(f"https://cbgc.scol.com.cn/news/{tid}", timeout=30)
-        rec["status"] = r.status_code
-        rec["ms"] = int((time.time() - t0) * 1000)
-        m = re.search(r"<title>(.*?)</title>", r.text)
-        rec["title"] = m.group(1)[:60] if m else ""
-        c = re.search(r'comments_count">\s*(\d+)', r.text)
-        rec["comments"] = int(c.group(1)) if c else None
-        rec["bytes"] = len(r.content)
-    except Exception as e:
-        rec["status"] = "ERR"
-        rec["error"] = str(e)[:120]
-    with open(os.path.join(REPO_DIR, f"log_{tid}.jsonl"), "a", encoding="utf-8") as f:
-        f.write(json.dumps(rec, ensure_ascii=False) + "\n")
-    print(f"#{rec['seq']} id={tid} status={rec['status']} ms={rec.get('ms','')}")
-
-for tid in _active_ids:
-    fetch(tid, state.get(tid, 0))
-    if state.get(tid, 0) > 0:
-        state[tid] = state[tid] - 1
-    time.sleep(random.uniform(5, 15))
 
 # ---- 发布后 72 小时快照（到达时记录一次，之后不再改动）----
 try:
@@ -139,11 +107,45 @@ try:
 except Exception as _e:
     print("snapshot err:", str(_e)[:120])
 
+if not _active_ids:
+    open(FINISH_MARKER, "w").write(time.strftime("%Y-%m-%d %H:%M:%S"))
+    print("ALL DONE (all targets reached)")
+    raise SystemExit(0)
+
+session = requests.Session()
+session.headers.update(HEADERS)
+
+def fetch(tid, left):
+    t0 = time.time()
+    rec = {"seq": left, "ts": time.strftime("%Y-%m-%d %H:%M:%S")}
+    try:
+        r = session.get(f"https://cbgc.scol.com.cn/news/{tid}", timeout=30)
+        rec["status"] = r.status_code
+        rec["ms"] = int((time.time() - t0) * 1000)
+        m = re.search(r"<title>(.*?)</title>", r.text)
+        rec["title"] = m.group(1)[:60] if m else ""
+        c = re.search(r'comments_count">\s*(\d+)', r.text)
+        rec["comments"] = int(c.group(1)) if c else None
+        rec["bytes"] = len(r.content)
+    except Exception as e:
+        rec["status"] = "ERR"
+        rec["error"] = str(e)[:120]
+    with open(os.path.join(REPO_DIR, f"log_{tid}.jsonl"), "a", encoding="utf-8") as f:
+        f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    print(f"#{rec['seq']} id={tid} status={rec['status']} ms={rec.get('ms','')}")
+
+for tid in _active_ids:
+    fetch(tid, state.get(tid, 0))
+    if state.get(tid, 0) > 0:
+        state[tid] = state[tid] - 1
+    time.sleep(random.uniform(5, 15))
+
+
 with open(STATE, "w") as f:
     json.dump(state, f)
 if not [tid for tid in state if _active(tid)]:
     open(FINISH_MARKER, "w").write(time.strftime("%Y-%m-%d %H:%M:%S"))
-    print("ALL DONE (all articles reached 72h)")
+    print("ALL DONE (all targets reached)")
 elif os.path.exists(FINISH_MARKER):
     os.remove(FINISH_MARKER)
     print("FINISHED marker removed: still inside 72h window")
