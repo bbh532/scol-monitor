@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""长循环运行器：在 runner 内连续跑约 5.5 小时，每 3 分钟一轮访问+提交，
-结束后写 exit=42 给 rerun 步骤自我续命，绕开 GitHub schedule 的排队延迟。"""
+"""长循环运行器：在 runner 内连续跑约 5.5 小时，每 3 分钟一轮访问+提交。
+全部目标跑满后立即退出且不续命；否则到点写 exit=42 让 rerun 步骤自我续命。"""
 import subprocess, sys, time, os, json, glob
 
 os.environ["TZ"] = "Asia/Shanghai"
@@ -35,9 +35,23 @@ def newest_visit_age():
                 break
         except Exception:
             pass
-    if not newest:
-        return None
-    return time.time() - newest
+    return None if not newest else time.time() - newest
+
+
+def commit_push(msg):
+    subprocess.run(["git", "config", "user.name", "monitor-bot"])
+    subprocess.run(["git", "config", "user.email", "monitor-bot@users.noreply.github.com"])
+    subprocess.run(["git", "add", "-A"])
+    if subprocess.run(["git", "diff", "--cached", "--quiet"]).returncode == 0:
+        return
+    subprocess.run(["git", "commit", "-q", "-m", msg])
+    for _ in range(3):
+        subprocess.run(["git", "pull", "--rebase", "origin", "main"], capture_output=True)
+        pr = subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True)
+        if pr.returncode == 0:
+            return
+        print("push retry:", (pr.stderr or "")[-200:])
+        time.sleep(15)
 
 
 # 防堆积：若其他实例 10 分钟内仍在访问，本实例退出且不续命
@@ -58,20 +72,13 @@ while time.time() < END:
     if r.returncode != 0 and r.stderr:
         print(r.stderr[-400:])
 
-    subprocess.run(["git", "config", "user.name", "monitor-bot"])
-    subprocess.run(["git", "config", "user.email", "monitor-bot@users.noreply.github.com"])
-    subprocess.run(["git", "add", "-A"])
-    if subprocess.run(["git", "diff", "--cached", "--quiet"]).returncode != 0:
-        subprocess.run(["git", "commit", "-q", "-m",
-                        f"loop: {time.strftime('%Y-%m-%d %H:%M')} [skip ci]"])
-        for _ in range(3):
-            subprocess.run(["git", "pull", "--rebase", "origin", "main"], capture_output=True)
-            pr = subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True)
-            if pr.returncode == 0:
-                break
-            print("push retry:", (pr.stderr or "")[-200:])
-            time.sleep(15)
+    if "ALL DONE" in (r.stdout or ""):
+        commit_push(f"done: {time.strftime('%Y-%m-%d %H:%M')} [skip ci]")
+        print("ALL TARGETS REACHED -> stop, no rerun")
+        mark(0)
+        sys.exit(0)
 
+    commit_push(f"loop: {time.strftime('%Y-%m-%d %H:%M')} [skip ci]")
     dt = time.time() - t0
     time.sleep(max(15, INTERVAL - dt))
 
