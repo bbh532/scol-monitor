@@ -58,7 +58,6 @@ while time.time() < END:
     if r.returncode != 0 and r.stderr:
         print(r.stderr[-400:])
 
-    subprocess.run([sys.executable, "gen_board.py"], capture_output=True)
     subprocess.run(["git", "config", "user.name", "monitor-bot"])
     subprocess.run(["git", "config", "user.email", "monitor-bot@users.noreply.github.com"])
     subprocess.run(["git", "add", "-A"])
