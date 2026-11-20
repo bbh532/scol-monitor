@@ -56,7 +56,8 @@ def commit_push(msg):
 
 # 防堆积：若其他实例 10 分钟内仍在访问，本实例退出且不续命
 age = newest_visit_age()
-if age is not None and age < 600:
+if age is not None and age < 300:
+    # 正常循环实例每 3 分钟访问一次，age<5 分钟说明它活着，让路
     print(f"SKIP: another instance active (last visit {age:.0f}s ago)")
     mark(0)
     sys.exit(0)
